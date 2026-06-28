@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pagamento — DÈDICA</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="announcement">Pagamento sicuro · Verifica ordine</div>
+  <main class="page-hero">
+    <div class="container" style="max-width:720px;">
+      <div class="config-form-card" style="text-align:center;">
+        <div class="success-icon">✓</div>
+        <h1 class="title" style="font-size:2.4rem;">Verifica pagamento</h1>
+        <p id="paymentMessage" class="lead">Controllo lo stato confermato dal backend...</p>
+        <div id="paymentActions" style="margin-top:20px;"></div>
+      </div>
+    </div>
+  </main>
+  <div class="toast"></div>
+  <script type="module" src="payment-result.js"></script>
+</body>
+</html>

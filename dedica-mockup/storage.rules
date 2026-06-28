@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == "gennaro.mazzacane@gmail.com";
+    }
+
+    function isImage() {
+      return request.resource != null
+        && request.resource.contentType.matches("image/.*");
+    }
+
+    function isDraftFile() {
+      return request.resource != null
+        && (
+          request.resource.contentType.matches("image/.*")
+          || request.resource.contentType == "application/pdf"
+        );
+    }
+
+    function canAccessOrder(orderId) {
+      return request.auth != null
+        && (
+          isAdmin()
+          || firestore.get(/databases/(default)/documents/orders/$(orderId)).data.customerUid == request.auth.uid
+        );
+    }
+
+    match /catalog_images/{fileName} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create, update: if isAdmin()
+        && isImage()
+        && request.resource.size < 5 * 1024 * 1024;
+      allow delete: if isAdmin();
+    }
+
+    match /custom_uploads/{fileName} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if false;
+      allow update, delete: if isAdmin();
+    }
+
+    match /drafts/{orderId}/{fileName} {
+      allow get: if canAccessOrder(orderId);
+      allow list: if isAdmin();
+      allow create, update: if isAdmin()
+        && isDraftFile()
+        && request.resource.size < 10 * 1024 * 1024;
+      allow delete: if isAdmin();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

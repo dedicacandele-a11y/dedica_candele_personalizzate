@@ -1,0 +1,101 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Il tuo carrello — DÈDICA</title><link rel="icon" href="favicon.ico" type="image/x-icon"><link rel="stylesheet" href="styles.css"></head>
+<body>
+<div class="announcement">Ordine personalizzato &middot; Pagamento dopo conferma bozza</div>
+<header class="site-header"><div class="container navbar"><nav class="nav-left"><a class="nav-link" href="index.html">Home</a><a class="nav-link" href="index.html#prodotti">Shop</a><a class="nav-link" href="index.html#eventi">Eventi</a><a class="nav-link" href="index.html#occasioni">Regali</a></nav><a class="brand" href="index.html"><img src="assets/logo.svg" alt="DÈDICA"></a><div class="nav-actions"><a class="nav-link" href="login.html">Account</a><a class="btn btn-primary" href="configuratore.html">Crea la tua candela</a><button class="icon-btn" data-pending="Assistenza">?</button><a class="icon-btn cart-pill" href="cart.html">♡<span class="cart-count" style="display:none">0</span></a><button class="icon-btn menu-toggle">☰</button></div></div></header><aside class="mobile-menu"><nav><a href="index.html">Home</a><a href="index.html#prodotti">Shop</a><a href="configuratore.html">Personalizza</a></nav></aside>
+<main class="cart-page"><div class="container"><div class="breadcrumb"><a href="index.html">Home</a> / Carrello</div><div class="section-head"><div><span class="eyebrow">Il tuo ordine</span><h1 class="title">Quasi pronta per essere accesa.</h1></div><p class="lead">Controlla la personalizzazione e i dettagli prima di procedere. Compila i dati di spedizione: registreremo la richiesta e ti invieremo la bozza prima della produzione.</p></div>
+<div class="cart-layout">
+  <div class="cart-items" id="cartItemsList">
+    <!-- Dynamically loaded items will go here -->
+  </div>
+  
+  <aside class="order-summary" id="orderSummary">
+    <h2>Riepilogo</h2>
+    <div class="order-line"><span>Subtotale</span><strong id="cartSubtotal">0,00 €</strong></div>
+    <div class="order-line"><span>Spedizione</span><strong id="cartShipping">4,90 €</strong></div>
+    <div class="order-line" id="discountRow" style="display:none; color:var(--terracotta);"><span>Sconto (<span id="discountCodeName"></span>)</span><strong id="cartDiscount">-0,00 €</strong></div>
+    <div class="order-line"><span>Anteprima digitale</span><strong>Inclusa</strong></div>
+    <div class="promo"><input placeholder="Codice promozionale" id="promoInput"><button id="applyPromoBtn">Applica</button></div>
+    <div class="order-line order-total"><span>Totale</span><strong id="cartTotal">0,00 €</strong></div>
+    <button class="btn btn-light" id="checkoutBtn" style="width:100%;">Procedi al checkout →</button>
+    <p class="checkout-note">Accedi, conferma l'ordine e paga in sicurezza con Stripe. Dopo il pagamento riceverai la bozza digitale.</p>
+  </aside>
+</div></div></main>
+
+<footer class="footer"><div class="container"><div class="footer-bottom" style="margin-top:0"><span>© 2026 DÈDICA. Ordini personalizzati.</span><span>Assistenza · Spedizioni · FAQ</span></div></div></footer>
+<div class="status-banner">ORDINI PERSONALIZZATI &middot; PAGAMENTO DOPO CONFERMA</div>
+<div class="toast"></div>
+
+<!-- Checkout Modal -->
+<div class="checkout-modal" id="checkoutModal">
+  <div class="checkout-content">
+    <button class="checkout-close" id="checkoutCloseBtn">&times;</button>
+    
+    <div id="checkoutFormState">
+      <h2 style="font-family:var(--serif);">Spedizione e conferma ordine</h2>
+      <p class="muted" style="margin-bottom: 20px; font-size: 0.9rem;">Inserisci i dati di spedizione: dopo la conferma verrai reindirizzato al pagamento sicuro Stripe.</p>
+      
+      <form class="checkout-form" id="checkoutForm" onsubmit="event.preventDefault();">
+        <div class="field">
+          <label for="checkoutEmail">Indirizzo Email</label>
+          <input type="email" id="checkoutEmail" class="input" required placeholder="mario.rossi@example.com">
+        </div>
+        
+        <div class="checkout-row">
+          <div class="field">
+            <label for="checkoutNome">Nome</label>
+            <input type="text" id="checkoutNome" class="input" required placeholder="Mario">
+          </div>
+          <div class="field">
+            <label for="checkoutCognome">Cognome</label>
+            <input type="text" id="checkoutCognome" class="input" required placeholder="Rossi">
+          </div>
+        </div>
+        
+        <div class="field">
+          <label for="checkoutIndirizzo">Indirizzo e Numero Civico</label>
+          <input type="text" id="checkoutIndirizzo" class="input" required placeholder="Via Roma, 42">
+        </div>
+        
+        <div class="checkout-row">
+          <div class="field">
+            <label for="checkoutCitta">Città</label>
+            <input type="text" id="checkoutCitta" class="input" required placeholder="Milano">
+          </div>
+          <div class="field">
+            <label for="checkoutCap">CAP</label>
+            <input type="text" id="checkoutCap" class="input" required pattern="[0-9]{5}" placeholder="20121">
+          </div>
+        </div>
+
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; border: none; margin-top: 12px;" id="confirmPaymentBtn">Vai al pagamento (<span id="checkoutTotalText">0,00 &euro;</span>)</button>
+      </form>
+    </div>
+    
+    <div class="checkout-success-state" id="checkoutSuccessState">
+      <div class="success-icon">✓</div>
+      <h2>Richiesta inviata!</h2>
+      <p>Grazie! La tua richiesta ordine &egrave; stata registrata correttamente.</p>
+      <div>Numero ordine: <span class="success-order-id" id="successOrderId">DEC-2026-0001</span></div>
+      <p class="muted" style="font-size: 0.86rem; margin-top: 15px;">Ti invieremo la bozza digitale e le istruzioni di pagamento alla mail indicata.</p>
+      <button class="btn btn-secondary" style="margin-top: 25px; width: 100%;" id="successCloseBtn">Torna alla Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- Search Overlay Modal -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-container">
+    <div class="search-header">
+      <h2>Cerca nel catalogo</h2>
+      <button class="search-close" id="searchCloseBtn">&times;</button>
+    </div>
+    <div class="search-input-wrapper">
+      <input type="text" id="searchInput" placeholder="Digita per cercare (es. dedica, foto, incisa...)" autocomplete="off">
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<script type="module" src="script.js"></script>
+</body></html>

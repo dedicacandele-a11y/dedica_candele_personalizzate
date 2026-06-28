@@ -1,0 +1,111 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == "gennaro.mazzacane@gmail.com";
+    }
+
+    function isNonEmptyString(value, maxLength) {
+      return value is string
+        && value.size() > 0
+        && value.size() <= maxLength;
+    }
+
+    function isMoney(value) {
+      return value is number
+        && value >= 0
+        && value < 100000;
+    }
+
+    function validProduct() {
+      return request.resource.data.keys().hasOnly([
+          "id", "name", "price", "desc", "badge", "image", "gallery", "customization"
+        ])
+        && isNonEmptyString(request.resource.data.id, 80)
+        && isNonEmptyString(request.resource.data.name, 160)
+        && isMoney(request.resource.data.price)
+        && request.resource.data.desc is string
+        && request.resource.data.desc.size() <= 2000
+        && request.resource.data.badge is string
+        && request.resource.data.badge.size() <= 80
+        && request.resource.data.image is string
+        && request.resource.data.image.size() <= 2000
+        && request.resource.data.gallery is list
+        && request.resource.data.gallery.size() <= 12
+        && (!request.resource.data.keys().hasAny(["customization"])
+          || request.resource.data.customization is map);
+    }
+
+    function validDiscount() {
+      return request.resource.data.keys().hasOnly(["value", "active"])
+        && request.resource.data.value is int
+        && request.resource.data.value > 0
+        && request.resource.data.value <= 90
+        && request.resource.data.active is bool;
+    }
+
+    match /products/{productId} {
+      allow get, list: if true;
+      allow create, update: if isAdmin() && validProduct();
+      allow delete: if isAdmin();
+    }
+
+    match /discounts/{code} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && validDiscount();
+      allow delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow create: if false;
+      allow get, list: if isAdmin()
+        || (request.auth != null && resource.data.customerUid == request.auth.uid);
+      allow update: if isAdmin()
+        || (
+          request.auth != null
+          && resource.data.customerUid == request.auth.uid
+          && resource.data.status in ["draft_sent", "revision_requested"]
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+            "status", "customerRevisionNote", "updatedAt"
+          ])
+          && request.resource.data.status in ["revision_requested", "draft_approved"]
+        );
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow get, list: if isAdmin()
+          || (request.auth != null
+            && get(/databases/$(database)/documents/orders/$(orderId)).data.customerUid == request.auth.uid);
+        allow create: if request.auth != null
+          && (
+            isAdmin()
+            || get(/databases/$(database)/documents/orders/$(orderId)).data.customerUid == request.auth.uid
+          )
+          && request.resource.data.keys().hasOnly([
+            "text", "senderUid", "senderEmail", "senderRole", "createdAt"
+          ])
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 800
+          && request.resource.data.senderUid == request.auth.uid
+          && request.resource.data.senderEmail == request.auth.token.email
+          && (
+            (isAdmin() && request.resource.data.senderRole == "admin")
+            || (
+              !isAdmin()
+              && get(/databases/$(database)/documents/orders/$(orderId)).data.customerUid == request.auth.uid
+              && request.resource.data.senderRole == "customer"
+            )
+          );
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
