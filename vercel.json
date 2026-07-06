@@ -1,14 +1,8 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": "dedica-mockup",
   "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/dedica-mockup/index.html"
-    },
-    {
-      "source": "/:path*",
-      "destination": "/dedica-mockup/:path*"
-    }
-  ]
+  "trailingSlash": false
 }
