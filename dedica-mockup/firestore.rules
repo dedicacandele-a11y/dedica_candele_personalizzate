@@ -21,7 +21,7 @@ service cloud.firestore {
 
     function validProduct() {
       return request.resource.data.keys().hasOnly([
-          "id", "name", "price", "desc", "badge", "image", "gallery", "customization"
+          "id", "name", "price", "desc", "badge", "category", "occasion", "image", "gallery", "details", "logistics", "customization"
         ])
         && isNonEmptyString(request.resource.data.id, 80)
         && isNonEmptyString(request.resource.data.name, 160)
@@ -30,12 +30,29 @@ service cloud.firestore {
         && request.resource.data.desc.size() <= 2000
         && request.resource.data.badge is string
         && request.resource.data.badge.size() <= 80
+        && isNonEmptyString(request.resource.data.category, 80)
+        && isNonEmptyString(request.resource.data.occasion, 120)
         && request.resource.data.image is string
         && request.resource.data.image.size() <= 2000
         && request.resource.data.gallery is list
         && request.resource.data.gallery.size() <= 12
         && (!request.resource.data.keys().hasAny(["customization"])
           || request.resource.data.customization is map);
+    }
+
+    function validCategory() {
+      return request.resource.data.keys().hasOnly([
+          "id", "name", "slug", "description", "subcategories", "active", "sortOrder"
+        ])
+        && isNonEmptyString(request.resource.data.id, 80)
+        && isNonEmptyString(request.resource.data.name, 120)
+        && isNonEmptyString(request.resource.data.slug, 120)
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 500
+        && request.resource.data.subcategories is list
+        && request.resource.data.subcategories.size() <= 40
+        && request.resource.data.active is bool
+        && request.resource.data.sortOrder is int;
     }
 
     function validDiscount() {
@@ -52,6 +69,12 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /categories/{categoryId} {
+      allow get, list: if true;
+      allow create, update: if isAdmin() && validCategory();
+      allow delete: if isAdmin();
+    }
+
     match /discounts/{code} {
       allow get: if true;
       allow list: if isAdmin();
@@ -59,20 +82,47 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /finance_settings/{settingId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /finance_expenses/{expenseId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /catalog_options/{optionId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /shipping_settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /business_settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /support_tickets/{ticketId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /support_rate_limits/{rateId} {
+      allow read, write: if false;
+    }
+
+    match /customer_profiles/{userId} {
+      allow get, create, update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow list, delete: if isAdmin();
+    }
+
     match /orders/{orderId} {
       allow create: if false;
       allow get, list: if isAdmin()
         || (request.auth != null && resource.data.customerUid == request.auth.uid);
-      allow update: if isAdmin()
-        || (
-          request.auth != null
-          && resource.data.customerUid == request.auth.uid
-          && resource.data.status in ["draft_sent", "revision_requested"]
-          && request.resource.data.diff(resource.data).changedKeys().hasOnly([
-            "status", "customerRevisionNote", "updatedAt"
-          ])
-          && request.resource.data.status in ["revision_requested", "draft_approved"]
-        );
+      allow update: if isAdmin();
       allow delete: if isAdmin();
 
       match /messages/{messageId} {

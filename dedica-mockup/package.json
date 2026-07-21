@@ -1,0 +1,22 @@
+{
+  "name": "dedica-mockup",
+  "description": "DÈDICA static storefront and Firebase backend integration",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0",
+    "@vitejs/plugin-react": "^6.0.3",
+    "vite": "^8.1.3"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  }
+}

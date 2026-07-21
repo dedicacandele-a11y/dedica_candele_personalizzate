@@ -3,3 +3,11 @@ node_modules/
 firebase-debug.log
 *.log
 test-results/
+playwright-report/
+dist-react/
+dedica-mockup/assets/app-*.js
+dedica-mockup/assets/app-*.css
+dedica-mockup/assets/index-*.js
+dedica-mockup/assets/index-*.css
+dedica-mockup/assets/jszip.min-*.js
+dedica-mockup/assets/favicon-*.ico
