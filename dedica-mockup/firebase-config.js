@@ -25,13 +25,11 @@ async function initFirebase() {
 
   try {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-    const { getAnalytics, isSupported } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js");
     const { getAuth } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
     const { getFirestore } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const { getStorage } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js");
 
     app = initializeApp(firebaseConfig);
-    analytics = (await isSupported()) ? getAnalytics(app) : null;
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
@@ -45,4 +43,12 @@ async function initFirebase() {
 
 const firebaseReady = initFirebase();
 
-export { app, analytics, auth, db, storage, isFirebaseLocal, firebaseReady };
+async function enableAnalyticsAfterConsent() {
+  await firebaseReady;
+  if (!app || analytics) return analytics;
+  const { getAnalytics, isSupported } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js");
+  analytics = (await isSupported()) ? getAnalytics(app) : null;
+  return analytics;
+}
+
+export { app, analytics, auth, db, storage, isFirebaseLocal, firebaseReady, enableAnalyticsAfterConsent };
